@@ -3,6 +3,10 @@
 # All values under 'argo-workflows' are passed to the upstream chart
 
 argo-workflows:
+  images:
+    # -- Common tag for Argo Workflows images. Defaults to `.Chart.AppVersion`.
+    tag: "v3.7.3"
+
   workflow:
     serviceAccount:
       create: true
@@ -26,6 +30,7 @@ argo-workflows:
       ingressClassName: "private-ingress"
       paths:
         - /argo(/|$)(.*)
+      pathType: ImplementationSpecific
 
     # Auth via token
     authModes:
