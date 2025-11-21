@@ -1,0 +1,2 @@
+# Ignore Helm chart package files
+**/charts/*.tgz
