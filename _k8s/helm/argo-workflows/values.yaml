@@ -1,0 +1,37 @@
+---
+# Custom values for Argo Workflows deployment
+# All values under 'argo-workflows' are passed to the upstream chart
+
+argo-workflows:
+  images:
+    # -- Common tag for Argo Workflows images. Defaults to `.Chart.AppVersion`.
+    tag: "v3.7.3"
+
+  workflow:
+    serviceAccount:
+      create: true
+
+  controller:
+    workflowNamespaces:
+      - argo-managed-crawler
+
+  server:
+    # Run under /argo on the private ingress
+    baseHref: /argo/
+
+    extraArgs:
+      - --base-href=/argo/
+
+    ingress:
+      enabled: true
+      annotations:
+        nginx.ingress.kubernetes.io/use-regex: "true"
+        nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+      ingressClassName: "private-ingress"
+      paths:
+        - /argo(/|$)(.*)
+      pathType: ImplementationSpecific
+
+    # Auth via token
+    authModes:
+      - client
