@@ -14,6 +14,20 @@ argo-workflows:
   controller:
     workflowNamespaces:
       - argo-managed-crawler
+    persistence:
+      archive: true
+      postgresql:
+        host: argo-workflows-database
+        port: 5434
+        database: postgres
+        tableName: argo_workflows
+        userNameSecret:
+          name: argo-workflows-db-credentials
+          key: POSTGRES_USER
+        passwordSecret:
+          name: argo-workflows-db-credentials
+          key: POSTGRES_PASSWORD
+
 
   server:
     # Run under /argo on the private ingress
@@ -35,3 +49,4 @@ argo-workflows:
     # Auth via token
     authModes:
       - client
+
