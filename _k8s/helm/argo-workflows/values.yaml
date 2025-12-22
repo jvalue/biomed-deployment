@@ -28,6 +28,11 @@ argo-workflows:
           name: argo-workflows-db-credentials
           key: POSTGRES_PASSWORD
 
+    # Default service account for workflows
+    workflowDefaults:
+      spec:
+        serviceAccountName: argo-workflow
+
 
   server:
     # Run under /argo on the private ingress
