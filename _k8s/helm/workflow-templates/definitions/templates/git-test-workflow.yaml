@@ -1,0 +1,14 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: git-test-workflow
+  namespace: argo-managed-crawler
+  labels:
+    template-version: "1.0.1"
+spec:
+  entrypoint: main
+  templates:
+    - name: main
+      container:
+        image: alpine:latest
+        command: [echo, "Hello World"]

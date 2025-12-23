@@ -1,0 +1,41 @@
+{{- if .Values.types.templates.enabled -}}
+{{- $whitelist := list -}}
+
+{{- if .Values.deployFilter -}}
+  {{- $whitelist = splitList "," .Values.deployFilter -}}
+{{- end -}}
+
+{{- range $path, $content := .Files.Glob "definitions/templates/*.yaml" -}}
+  {{- $filename := base $path -}}
+  {{- $templateName := $filename | replace ".yaml" "" -}}
+
+  {{- if has $templateName $whitelist -}}
+    {{- $wf := $content | toString | fromYaml -}}
+
+    {{- /* 1. Labels aus der Datei holen (oder leeres Dict, falls keine da sind) */ -}}
+    {{- $fileLabels := $wf.metadata.labels | default dict -}}
+
+    {{- /* 2. Version ermitteln: Erst 'version', dann 'app.kubernetes.io/version', sonst Chart-Version */ -}}
+    {{- $customVersion := $fileLabels.version | default (index $fileLabels "app.kubernetes.io/version") -}}
+    {{- $finalVersion := $customVersion | default $.Chart.AppVersion -}}
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: {{ $wf.metadata.name }}
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    # Hier wird die ermittelte Version gesetzt
+    app.kubernetes.io/version: {{ $finalVersion | quote }}
+    environment: {{ $.Values.environment }}
+    {{- with $fileLabels }}
+    # 'omit' entfernt die Version-Keys aus der Liste, damit sie nicht doppelt erscheinen
+    {{- omit . "app.kubernetes.io/version" "version" | toYaml | nindent 4 }}
+    {{- end }}
+spec:
+  serviceAccountName: {{ $wf.spec.serviceAccountName | default ($.Values.serviceAccountName | default "default") }}
+  {{- toYaml $wf.spec | nindent 2 }}
+  {{- end }}
+{{- end }}
+{{- end }}
