@@ -2,7 +2,7 @@
 
 ## 1. Folder Structure
 - `_k8s/helm/`: Helm chart for Argo Workflows deployment
-- `argo/workflow_templates/`: Reusable WorkflowTemplate and CronWorkflow manifests
+- `_k8s/helm/workflow-templates/`: Helm chart for Argo WorkflowTemplates deployment
 
 # 2. Argo Workflows Usage
 We will develop our own UI, but as long as it is not ready, we can use the Argo Workflows UI and API directly.
