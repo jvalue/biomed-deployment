@@ -44,7 +44,7 @@ file found, it:
 1. Create a new YAML file in `definitions/templates/` (e.g., `my-process.yaml`).
 2. Define the `WorkflowTemplate` as usual. You do **not** need to add Helm templating syntax (`{{ ... }}`) inside this
    file.
-3. Add a version label
+3. Add a version label to the `WorkflowTemplate` metadata, for example:
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
