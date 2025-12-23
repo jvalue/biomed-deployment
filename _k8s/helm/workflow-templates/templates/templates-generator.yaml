@@ -24,7 +24,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
-  serviceAccountName: {{ $wf.spec.serviceAccountName | default ($.Values.serviceAccountName | default "default") }}
+  serviceAccountName: argo-workflow
   {{- toYaml $wf.spec | nindent 2 }}
   {{- end }}
 {{- end }}
