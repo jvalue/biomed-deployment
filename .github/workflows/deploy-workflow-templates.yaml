@@ -1,4 +1,4 @@
-name: Deploy Workflow Templates
+name: deploy-workflow-templates
 
 on:
   # Manual trigger
