@@ -56,6 +56,6 @@ jobs:
             --namespace argo-managed-crawler \
             --values ./_k8s/helm/workflow-templates/values.yaml \
             --set environment=$TARGET \
-            --set deployFilter="${{ steps.filter.outputs.list }}"
+            --set deployFilter="${{ steps.filter.outputs.list }}" \
             --set types.templates.enabled=true \
             --set types.cron.enabled=false
