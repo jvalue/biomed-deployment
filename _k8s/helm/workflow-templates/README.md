@@ -9,7 +9,7 @@ environment configurations.
 
 ```text
 _k8s/helm/workflow-templates/
-├── Chart.yaml                  # Chart metadata and default version
+├── Chart.yaml                  # Chart metadata and version
 ├── values.yaml                 # Configuration values
 ├── definitions/
 │   ├── templates/              # Place your standard WorkflowTemplate YAMLs here
@@ -28,7 +28,7 @@ file found, it:
 1. Checks if the file is allowed via the `deployFilter` (passed by CI/CD).
 2. Parses the raw YAML content.
 3. Injects standard labels (e.g., `environment`, `managed-by`).
-5. Generates a valid Kubernetes manifest in the target namespace.
+4. Generates a valid Kubernetes manifest in the target namespace.
 
 ## ⚙️ Configuration (`values.yaml`)
 
@@ -44,7 +44,7 @@ file found, it:
 1. Create a new YAML file in `definitions/templates/` (e.g., `my-process.yaml`).
 2. Define the `WorkflowTemplate` as usual. You do **not** need to add Helm templating syntax (`{{ ... }}`) inside this
    file.
-3. Add a version label
+3. Add a template-version label
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -53,7 +53,7 @@ metadata:
   name: my-process
   namespace: argo-managed-crawler
   labels:
-    version: "2.1.0"
+    template-version: "2.1.0"
 spec:
   entrypoint: main
   templates:
