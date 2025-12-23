@@ -1,0 +1,61 @@
+name: Deploy Workflow Templates
+
+on:
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: 'Target Environment (dev or prod)'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target_env }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.12.0'
+
+      - name: Set Kubeconfig
+        # Choose Kubeconfig based on target environment
+        run: |
+          mkdir -p ~/.kube
+          TARGET="${{ inputs.target_env }}"
+          
+          if [ "$TARGET" == "prod" ]; then
+            echo "${{ secrets.KUBECONFIG_PROD }}" > ~/.kube/config
+          else
+            echo "${{ secrets.KUBECONFIG_DEV }}" > ~/.kube/config
+          fi
+          chmod 600 ~/.kube/config
+
+      - name: Generate Deploy Filter
+        id: filter
+        # Lists all .yaml files in the templates folder, removes extension and path, joins with comma (necessary for Helm)
+        run: |
+          TEMPLATES=$(ls _k8s/helm/workflow-templates/definitions/templates/*.yaml | xargs -n 1 basename | sed 's/\.yaml$//' | paste -sd "," -)
+          echo "Found Templates: $TEMPLATES"
+          echo "list=$TEMPLATES" >> $GITHUB_OUTPUT
+
+      - name: Deploy to Kubernetes
+        run: |
+          TARGET="${{ inputs.target_env }}"
+          
+          helm upgrade --install workflow-templates ./_k8s/helm/workflow-templates \
+            --namespace argo-managed-crawler \
+            --values ./_k8s/helm/workflow-templates/values.yaml \
+            --set environment=$TARGET \
+            --set deployFilter="${{ steps.filter.outputs.list }}"
+            --set types.templates.enabled=true \
+            --set types.cron.enabled=false
