@@ -12,13 +12,24 @@ on:
         options:
           - dev
           - prod
+      deploy_filter:
+        description: 'Comma-separated list of templates to deploy (e.g. template1,template2)'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: [Linux, k8s-access]
     environment: ${{ inputs.target_env }}
 
+    container:
+      image: ubuntu:latest
+
     steps:
+      - name: Install Dependencies
+        run: apt-get update && apt-get install -y git curl
+
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -40,18 +51,25 @@ jobs:
           fi
           chmod 600 ~/.kube/config
 
-      - name: Generate Deploy Filter
+      - name: Determine Deploy Filter
         id: filter
-        # Lists all .yaml files in the templates folder, removes extension and path, joins with comma (necessary for Helm)
         run: |
-          TEMPLATES=$(ls _k8s/helm/workflow-templates/definitions/templates/*.yaml | xargs -n 1 basename | sed 's/\.yaml$//' | paste -sd "," -)
-          echo "Found Templates: $TEMPLATES"
-          echo "list=$TEMPLATES" >> $GITHUB_OUTPUT
+          INPUT_FILTER="${{ inputs.deploy_filter }}"
+
+          if [ -z "$INPUT_FILTER" ]; then
+            echo "No input provided. Skipping deployment."
+            echo "do_deploy=false" >> $GITHUB_OUTPUT
+          else
+            echo "User input provided. Deploying: $INPUT_FILTER"
+            echo "list=$INPUT_FILTER" >> $GITHUB_OUTPUT
+            echo "do_deploy=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Deploy to Kubernetes
+        if: steps.filter.outputs.do_deploy == 'true'
         run: |
           TARGET="${{ inputs.target_env }}"
-          
+
           helm upgrade --install workflow-templates ./_k8s/helm/workflow-templates \
             --namespace argo-managed-crawler \
             --values ./_k8s/helm/workflow-templates/values.yaml \
