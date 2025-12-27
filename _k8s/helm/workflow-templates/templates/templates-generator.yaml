@@ -1,16 +1,6 @@
 {{- if .Values.types.templates.enabled -}}
-{{- $whitelist := list -}}
-
-{{- if .Values.deployFilter -}}
-  {{- $whitelist = splitList "," .Values.deployFilter -}}
-{{- end -}}
-
 {{- range $path, $content := .Files.Glob "definitions/templates/*.yaml" -}}
-  {{- $filename := base $path -}}
-  {{- $templateName := $filename | replace ".yaml" "" -}}
-
-  {{- if has $templateName $whitelist -}}
-    {{- $wf := $content | toString | fromYaml -}}
+  {{- $wf := $content | toString | fromYaml -}}
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
@@ -26,6 +16,5 @@ metadata:
 spec:
   serviceAccountName: argo-workflow
   {{- toYaml $wf.spec | nindent 2 }}
-  {{- end }}
 {{- end }}
 {{- end }}
