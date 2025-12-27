@@ -69,10 +69,6 @@ for deployment.
 ### Manual Deployment
 
 ```bash
-# 1. Generate the list of templates
-TEMPLATES=$(ls definitions/templates/*.yaml | xargs -n 1 basename | sed 's/\.yaml$//' | paste -sd "," -)
-
-# 2. Run Helm Upgrade
 helm upgrade --install workflow-templates . \
   --namespace argo-managed-crawler \
   --create-namespace \
