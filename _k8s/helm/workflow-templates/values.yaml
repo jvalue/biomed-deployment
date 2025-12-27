@@ -1,14 +1,7 @@
 # Environment
 environment: dev
 
-# List of file names of templates which should be deployed.
-# Typically set via CI/CD pipeline.
-deployFilter: ""
-
 types:
   # Enable or disable deployment of WorkflowTemplates
   templates:
     enabled: true
-  # Enable or disable deployment of CronWorkflows (for future use)
-  cron:
-    enabled: false
