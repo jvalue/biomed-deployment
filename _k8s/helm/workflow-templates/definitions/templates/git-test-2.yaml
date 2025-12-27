@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: git-test-workflow
+  name: git-test-2
   namespace: argo-managed-crawler
   labels:
     template-version: "1.0.1"
