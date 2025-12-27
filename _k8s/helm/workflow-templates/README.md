@@ -37,7 +37,7 @@ file found, it:
 
 ## 🛠 Adding a New Workflow
 
-1. Create a new YAML filto e in `definitions/templates/` (e.g., `my-process.yaml`).
+1. Create a new YAML file in `definitions/templates/` (e.g., `my-process.yaml`).
 2. Define the `WorkflowTemplate` as usual. You do **not** need to add Helm templating syntax (`{{ ... }}`) inside this
    file.
 3. Add a template-version label to the `WorkflowTemplate` metadata, for example:
