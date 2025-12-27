@@ -1,6 +1,6 @@
 {{- if .Values.types.templates.enabled -}}
 {{- range $path, $content := .Files.Glob "definitions/templates/*.yaml" -}}
-  {{- $wf := $content | toString | fromYaml -}}
+  {{- $wf := $content | toString | fromYaml }}
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
