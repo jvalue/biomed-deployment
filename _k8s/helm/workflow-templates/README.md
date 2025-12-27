@@ -13,7 +13,6 @@ _k8s/helm/workflow-templates/
 ├── values.yaml                 # Configuration values
 ├── definitions/
 │   ├── templates/              # Place your standard WorkflowTemplate YAMLs here
-│   └── cron/                   # (Future) Place CronWorkflow YAMLs here
 └── templates/
     └── templates-generator.yaml # Logic to generate manifests from definitions
 ```
@@ -25,23 +24,20 @@ _k8s/helm/workflow-templates/
 The file `templates/templates-generator.yaml` iterates over files found in `definitions/templates/*.yaml`. For every
 file found, it:
 
-1. Checks if the file is allowed via the `deployFilter` (passed by CI/CD).
-2. Parses the raw YAML content.
-3. Injects standard labels (e.g., `environment`, `managed-by`).
-4. Generates a valid Kubernetes manifest in the target namespace.
+1. Parses the raw YAML content.
+2. Injects standard labels (e.g., `environment`, `managed-by`).
+3. Generates a valid Kubernetes manifest in the target namespace.
 
 ## ⚙️ Configuration (`values.yaml`)
 
-| Key                       | Type   | Default | Description                                                                    |
-|---------------------------|--------|---------|--------------------------------------------------------------------------------|
-| `environment`             | string | `dev`   | The target environment (e.g., `dev`, `prod`). Added as a label.                |
-| `deployFilter`            | string | `""`    | **Required.** Comma-separated list of filenames (without extension) to deploy. |
-| `types.templates.enabled` | bool   | `true`  | Enables generation of standard `WorkflowTemplate` resources.                   |
-| `types.cron.enabled`      | bool   | `false` | Enables generation of `CronWorkflow` resources (for future use).               |
+| Key                       | Type   | Default | Description                                                     |
+|---------------------------|--------|---------|-----------------------------------------------------------------|
+| `environment`             | string | `dev`   | The target environment (e.g., `dev`, `prod`). Added as a label. |
+| `types.templates.enabled` | bool   | `true`  | Enables generation of standard `WorkflowTemplate` resources.    |
 
 ## 🛠 Adding a New Workflow
 
-1. Create a new YAML file in `definitions/templates/` (e.g., `my-process.yaml`).
+1. Create a new YAML filto e in `definitions/templates/` (e.g., `my-process.yaml`).
 2. Define the `WorkflowTemplate` as usual. You do **not** need to add Helm templating syntax (`{{ ... }}`) inside this
    file.
 3. Add a template-version label to the `WorkflowTemplate` metadata, for example:
@@ -67,11 +63,10 @@ spec:
 
 ### CI/CD (GitHub Actions)
 
-The deployment pipeline automatically scans the `definitions/templates` folder and populates the `deployFilter`.
+The deployment pipeline automatically scans the `definitions/templates` folder and populates all available templates 
+for deployment.
 
 ### Manual Deployment
-
-To deploy manually, you must provide the `deployFilter` to tell Helm which files to process.
 
 ```bash
 # 1. Generate the list of templates
@@ -81,6 +76,5 @@ TEMPLATES=$(ls definitions/templates/*.yaml | xargs -n 1 basename | sed 's/\.yam
 helm upgrade --install workflow-templates . \
   --namespace argo-managed-crawler \
   --create-namespace \
-  --set environment=dev \
-  --set deployFilter="$TEMPLATES"
+  --set environment=dev
 ```

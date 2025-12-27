@@ -12,11 +12,6 @@ on:
         options:
           - dev
           - prod
-      deploy_filter:
-        description: 'Comma-separated list of templates to deploy (e.g. template1,template2)'
-        required: false
-        default: ''
-        type: string
 
 jobs:
   deploy:
@@ -51,22 +46,7 @@ jobs:
           fi
           chmod 600 ~/.kube/config
 
-      - name: Determine Deploy Filter
-        id: filter
-        run: |
-          INPUT_FILTER="${{ inputs.deploy_filter }}"
-
-          if [ -z "$INPUT_FILTER" ]; then
-            echo "No input provided. Skipping deployment."
-            echo "do_deploy=false" >> $GITHUB_OUTPUT
-          else
-            echo "User input provided. Deploying: $INPUT_FILTER"
-            echo "list=$INPUT_FILTER" >> $GITHUB_OUTPUT
-            echo "do_deploy=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: Deploy to Kubernetes
-        if: steps.filter.outputs.do_deploy == 'true'
         run: |
           TARGET="${{ inputs.target_env }}"
 
@@ -74,6 +54,4 @@ jobs:
             --namespace argo-managed-crawler \
             --values ./_k8s/helm/workflow-templates/values.yaml \
             --set environment=$TARGET \
-            --set deployFilter="${{ steps.filter.outputs.list }}" \
-            --set types.templates.enabled=true \
-            --set types.cron.enabled=false
+            --set types.templates.enabled=true
