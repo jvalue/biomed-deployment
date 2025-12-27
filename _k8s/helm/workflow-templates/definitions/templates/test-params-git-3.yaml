@@ -1,0 +1,55 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: test-params-git-3
+  namespace: argo-managed-crawler
+  labels:
+    template-version: "1.0.0"
+spec:
+  entrypoint: main
+  arguments:
+    parameters:
+      - name: repo
+        value: https://example.com/repo.git
+      - name: branch
+        value: main
+      - name: commit
+        value: HEAD
+      - name: build_id
+        value: "1234"
+      - name: image_tag
+        value: latest
+      - name: notify_email
+        value: dev@example.com
+      - name: verbose
+        value: "false"
+  templates:
+    - name: main
+      inputs:
+        parameters:
+          - name: repo
+            value: "{{workflow.parameters.repo}}"
+          - name: branch
+            value: "{{workflow.parameters.branch}}"
+          - name: commit
+            value: "{{workflow.parameters.commit}}"
+          - name: build_id
+            value: "{{workflow.parameters.build_id}}"
+          - name: image_tag
+            value: "{{workflow.parameters.image_tag}}"
+          - name: notify_email
+            value: "{{workflow.parameters.notify_email}}"
+          - name: verbose
+            value: "{{workflow.parameters.verbose}}"
+      container:
+        image: alpine:latest
+        command: [sh, -c]
+        args:
+          - |
+            echo "Repo: {{inputs.parameters.repo}}"
+            echo "Branch: {{inputs.parameters.branch}}"
+            echo "Commit: {{inputs.parameters.commit}}"
+            echo "Build ID: {{inputs.parameters.build_id}}"
+            echo "Image Tag: {{inputs.parameters.image_tag}}"
+            echo "Notify: {{inputs.parameters.notify_email}}"
+            echo "Verbose: {{inputs.parameters.verbose}}"
