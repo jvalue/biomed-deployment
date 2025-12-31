@@ -5,10 +5,24 @@ on:
     branches:
       - main
     paths:
-      - '_k8s/helm/workflow-templates/definitions/cron/**'
+      - '_k8s/helm/workflow-templates/definitions/cron/dev/**'
+      - '_k8s/helm/workflow-templates/definitions/cron/prod/**'
+  workflow_dispatch:
+    inputs:
+      deploy_dev:
+        description: 'Deploy to Dev?'
+        required: true
+        default: 'true'
+        type: boolean
+      deploy_prod:
+        description: 'Deploy to Prod?'
+        required: true
+        default: 'true'
+        type: boolean
 
 jobs:
   check-changes:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     outputs:
       deploy_dev: ${{ steps.check.outputs.deploy_dev }}
@@ -24,14 +38,14 @@ jobs:
         run: |
           # Get list of changed files between previous commit and current
           CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})
-          
+
           echo "Changed files:"
           echo "$CHANGED_FILES"
-          
+
           DEPLOY_DEV="false"
           DEPLOY_PROD="false"
           SAFE="true"
-          
+
           for file in $CHANGED_FILES; do
             if [[ "$file" == _k8s/helm/workflow-templates/definitions/cron/dev/* ]]; then
               DEPLOY_DEV="true"
@@ -42,18 +56,39 @@ jobs:
               SAFE="false"
             fi
           done
-          
+
           if [ "$SAFE" == "false" ]; then
             echo "Error: Changes detected outside of cron definitions. Aborting deployment."
             exit 1
           fi
-          
+
+          # Abort automatic push-triggered run if both dev and prod changed
+          if [ "${{ github.event_name }}" = "push" ] && [ "$DEPLOY_DEV" == "true" ] && [ "$DEPLOY_PROD" == "true" ]; then
+          echo "Error: Changes in both dev and prod detected on push — automatic deployment aborted."
+          exit 1
+          fi
+      
           echo "deploy_dev=$DEPLOY_DEV" >> $GITHUB_OUTPUT
           echo "deploy_prod=$DEPLOY_PROD" >> $GITHUB_OUTPUT
 
+  manual-setup:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_dev: ${{ steps.set-vars.outputs.deploy_dev }}
+      deploy_prod: ${{ steps.set-vars.outputs.deploy_prod }}
+    steps:
+      - name: Set Manual Variables
+        id: set-vars
+        run: |
+          echo "deploy_dev=${{ inputs.deploy_dev }}" >> $GITHUB_OUTPUT
+          echo "deploy_prod=${{ inputs.deploy_prod }}" >> $GITHUB_OUTPUT
+
   await-dev-approval:
-    needs: check-changes
-    if: needs.check-changes.outputs.deploy_dev == 'true'
+    needs: [check-changes, manual-setup]
+    if: |
+      always() &&
+      (needs.check-changes.outputs.deploy_dev == 'true' || needs.manual-setup.outputs.deploy_dev == 'true')
     runs-on: ubuntu-latest
     environment: dev
     steps:
@@ -63,15 +98,14 @@ jobs:
           echo "Approve the deployment in the Environments page or in the Actions UI to continue."
 
   deploy-dev:
-    needs: [check-changes, await-dev-approval]
-    if: needs.check-changes.outputs.deploy_dev == 'true'
+    needs: [await-dev-approval]
     runs-on: [Linux, k8s-access]
     environment: dev
     container:
       image: ubuntu:latest
     steps:
       - name: Install Dependencies
-        run: apt-get update && apt-get install -y git curl
+        run: apt-get update && apt-get install -y git curl unzip
 
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -93,12 +127,13 @@ jobs:
             --namespace argo-managed-crawler \
             --values ./_k8s/helm/workflow-templates/values.yaml \
             --set environment=dev \
-            --set types.templates.enabled=true \
             --set types.cron.enabled=true
 
   await-prod-approval:
-    needs: check-changes
-    if: needs.check-changes.outputs.deploy_prod == 'true'
+    needs: [check-changes, manual-setup]
+    if: |
+      always() &&
+      (needs.check-changes.outputs.deploy_prod == 'true' || needs.manual-setup.outputs.deploy_prod == 'true')
     runs-on: ubuntu-latest
     environment: prod
     steps:
@@ -108,15 +143,14 @@ jobs:
           echo "Approve the deployment in the Environments page or in the Actions UI to continue."
 
   deploy-prod:
-    needs: [check-changes, await-prod-approval]
-    if: needs.check-changes.outputs.deploy_prod == 'true'
+    needs: [await-prod-approval]
     runs-on: [Linux, k8s-access]
     environment: prod
     container:
       image: ubuntu:latest
     steps:
       - name: Install Dependencies
-        run: apt-get update && apt-get install -y git curl
+        run: apt-get update && apt-get install -y git curl unzip
 
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -138,5 +172,4 @@ jobs:
             --namespace argo-managed-crawler \
             --values ./_k8s/helm/workflow-templates/values.yaml \
             --set environment=prod \
-            --set types.templates.enabled=true \
             --set types.cron.enabled=true
