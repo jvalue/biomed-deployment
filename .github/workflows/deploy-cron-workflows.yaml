@@ -1,0 +1,142 @@
+name: deploy-cron-workflows
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '_k8s/helm/workflow-templates/definitions/cron/**'
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      deploy_dev: ${{ steps.check.outputs.deploy_dev }}
+      deploy_prod: ${{ steps.check.outputs.deploy_prod }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check Changed Files
+        id: check
+        run: |
+          # Get list of changed files between previous commit and current
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})
+          
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+          
+          DEPLOY_DEV="false"
+          DEPLOY_PROD="false"
+          SAFE="true"
+          
+          for file in $CHANGED_FILES; do
+            if [[ "$file" == _k8s/helm/workflow-templates/definitions/cron/dev/* ]]; then
+              DEPLOY_DEV="true"
+            elif [[ "$file" == _k8s/helm/workflow-templates/definitions/cron/prod/* ]]; then
+              DEPLOY_PROD="true"
+            else
+              echo "File $file is outside of allowed cron directories!"
+              SAFE="false"
+            fi
+          done
+          
+          if [ "$SAFE" == "false" ]; then
+            echo "Error: Changes detected outside of cron definitions. Aborting deployment."
+            exit 1
+          fi
+          
+          echo "deploy_dev=$DEPLOY_DEV" >> $GITHUB_OUTPUT
+          echo "deploy_prod=$DEPLOY_PROD" >> $GITHUB_OUTPUT
+
+  await-dev-approval:
+    needs: check-changes
+    if: needs.check-changes.outputs.deploy_dev == 'true'
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Await manual approval for dev
+        run: |
+          echo "This job exists to trigger the environment protection check for 'dev'."
+          echo "Approve the deployment in the Environments page or in the Actions UI to continue."
+
+  deploy-dev:
+    needs: [check-changes, await-dev-approval]
+    if: needs.check-changes.outputs.deploy_dev == 'true'
+    runs-on: [Linux, k8s-access]
+    environment: dev
+    container:
+      image: ubuntu:latest
+    steps:
+      - name: Install Dependencies
+        run: apt-get update && apt-get install -y git curl
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.12.0'
+
+      - name: Set Kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_DEV }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Deploy to Dev
+        run: |
+          helm upgrade --install workflow-templates ./_k8s/helm/workflow-templates \
+            --namespace argo-managed-crawler \
+            --values ./_k8s/helm/workflow-templates/values.yaml \
+            --set environment=dev \
+            --set types.templates.enabled=true \
+            --set types.cron.enabled=true
+
+  await-prod-approval:
+    needs: check-changes
+    if: needs.check-changes.outputs.deploy_prod == 'true'
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Await manual approval for prod
+        run: |
+          echo "This job exists to trigger the environment protection check for 'prod'."
+          echo "Approve the deployment in the Environments page or in the Actions UI to continue."
+
+  deploy-prod:
+    needs: [check-changes, await-prod-approval]
+    if: needs.check-changes.outputs.deploy_prod == 'true'
+    runs-on: [Linux, k8s-access]
+    environment: prod
+    container:
+      image: ubuntu:latest
+    steps:
+      - name: Install Dependencies
+        run: apt-get update && apt-get install -y git curl
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.12.0'
+
+      - name: Set Kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_PROD }}" > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+      - name: Deploy to Prod
+        run: |
+          helm upgrade --install workflow-templates ./_k8s/helm/workflow-templates \
+            --namespace argo-managed-crawler \
+            --values ./_k8s/helm/workflow-templates/values.yaml \
+            --set environment=prod \
+            --set types.templates.enabled=true \
+            --set types.cron.enabled=true
