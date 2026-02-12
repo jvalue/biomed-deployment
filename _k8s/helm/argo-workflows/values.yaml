@@ -44,14 +44,12 @@ argo-workflows:
     ingress:
       enabled: true
       annotations:
-        nginx.ingress.kubernetes.io/use-regex: "true"
-        nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+      traefik.ingress.kubernetes.io/router.middlewares: argo-argo-workflows-strip-prefix@kubernetescrd
       ingressClassName: "private-ingress"
       paths:
-        - /argo(/|$)(.*)
-      pathType: ImplementationSpecific
+        - /argo
+      pathType: Prefix
 
     # Auth via token
     authModes:
       - client
-

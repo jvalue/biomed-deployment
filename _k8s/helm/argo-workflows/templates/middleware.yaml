@@ -1,0 +1,13 @@
+{{- $argoValues := index .Values "argo-workflows" -}}
+{{- if and $argoValues.server.ingress.enabled -}}
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: argo-workflows-strip-prefix
+  namespace: {{ .Release.Namespace }}
+spec:
+  stripPrefix:
+    prefixes:
+      - /argo
+{{- end }}
+
