@@ -5,6 +5,3 @@ types:
   # Enable or disable deployment of WorkflowTemplates
   templates:
     enabled: true
-  # Enable or disable deployment of CronWorkflows
-  cron:
-    enabled: true
