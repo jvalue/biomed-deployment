@@ -53,3 +53,47 @@ argo-workflows:
     # Auth via token
     authModes:
       - client
+
+  # Konfiguration für Artifact Repository (MinIO)
+  useDefaultArtifactRepo: true
+  artifactRepository:
+    archiveLogs: true
+    s3:
+      bucket: argo-artifacts
+      endpoint: argo-workflows-minio.argo.svc.cluster.local:9000
+      insecure: true
+      accessKeySecret:
+        name: argo-workflows-minio
+        key: rootUser
+      secretKeySecret:
+        name: argo-workflows-minio
+        key: rootPassword
+
+# MinIO Configuration
+# All values under 'minio' are passed to the upstream MinIO chart
+minio:
+  mode: standalone
+
+  rootUser: minioadmin
+  rootPassword: minioadmin
+
+  persistence:
+    enabled: true
+    storageClass: "longhorn-basic-backup"
+    size: 10Gi
+    accessMode: ReadWriteOnce
+
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+  # Bucket für Argo Artifacts erstellen
+  buckets:
+    - name: argo-artifacts
+      policy: none
+      purge: false
+
