@@ -1,10 +1,15 @@
 # Argo Workflows Helm Chart
 
-This Helm chart deploys Argo Workflows using the official upstream chart as a dependency.
+This Helm chart deploys Argo Workflows using the official upstream chart as a dependency, including MinIO for artifact storage.
 
 ## Overview
 
-This is a wrapper chart that uses the official [Argo Workflows Helm chart](https://github.com/argoproj/argo-helm) as a dependency, allowing for easier maintenance and upgrades while maintaining custom configurations.
+This is a wrapper chart that uses the official [Argo Workflows Helm chart](https://github.com/argoproj/argo-helm) and [MinIO Helm chart](https://github.com/minio/minio/tree/master/helm/minio) as dependencies, allowing for easier maintenance and upgrades while maintaining custom configurations.
+
+## Components
+
+- **Argo Workflows**: Workflow engine for Kubernetes
+- **MinIO**: S3-compatible object storage for workflow artifacts and logs
 
 ## Prerequisites
 
@@ -54,7 +59,24 @@ kubectl get ingress -n argo
 
 ## Configuration
 
-The chart is configured via the `values.yaml` file. All values under the `argo-workflows` key are passed to the upstream chart.
+The chart is configured via the `values.yaml` file. All values under the `argo-workflows` key are passed to the upstream Argo Workflows chart, and all values under `minio` are passed to the upstream MinIO chart.
+
+## Accessing MinIO
+
+Get the MinIO root credentials:
+
+```bash
+export ROOT_USER=$(kubectl get secret --namespace argo argo-workflows-minio -o jsonpath="{.data.rootUser}" | base64 -d)
+export ROOT_PASSWORD=$(kubectl get secret --namespace argo argo-workflows-minio -o jsonpath="{.data.rootPassword}" | base64 -d)
+```
+
+Port-forward to access the MinIO console:
+
+```bash
+kubectl port-forward --namespace argo svc/argo-workflows-minio-console 9001:9001
+```
+
+Then open http://localhost:9001 in your browser.
 
 ## Uninstallation
 
