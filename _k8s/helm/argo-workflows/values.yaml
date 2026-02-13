@@ -94,7 +94,7 @@ minio:
       memory: "2Gi"
       cpu: "1000m"
 
-  # Bucket für Argo Artifacts erstellen
+  # Create bucket for Argo artifacts
   buckets:
     - name: argo-artifacts
       policy: none
