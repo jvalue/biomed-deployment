@@ -33,6 +33,9 @@ argo-workflows:
       spec:
         serviceAccountName: argo-workflow
 
+        podGC:
+          strategy: OnPodCompletion         # Delete Pods after completion
+          deleteDelayDuration: 5m              # Wait 5 minutes before deletion
 
   server:
     # Run under /argo on the private ingress
