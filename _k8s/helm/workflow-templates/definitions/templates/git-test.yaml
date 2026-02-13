@@ -11,4 +11,12 @@ spec:
     - name: main
       container:
         image: alpine:latest
-        command: [echo, "Hello World"]
+        command: ["sh", "-c"]
+        args:
+          - |
+            i=1
+            while [ "$i" -le 500 ]; do
+              echo "Crawling datasets $i..."
+              i=$((i+1))
+            done
+            sleep 1
