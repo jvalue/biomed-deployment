@@ -13,5 +13,5 @@ spec:
     - name: main
       container:
         image: ghcr.io/jvalue/crawler-dummy:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         command: ["python", "-m", "src.main"]

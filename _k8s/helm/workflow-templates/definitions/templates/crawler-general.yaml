@@ -25,7 +25,7 @@ spec:
     - name: main
       container:
         image: ghcr.io/jvalue/crawler-general:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         command: ["python", "-m", "src.main"]
         env:
           - name: FTP_URL
