@@ -6,13 +6,13 @@ metadata:
   labels:
     template-version: "1.0.0"
 spec:
+  imagePullSecrets:
+    - name: ghcr-login-secret
   entrypoint: main
   arguments:
     parameters:
       - name: targetUrl
         value: ""
-      - name: FTP_URL
-        value: "https://ftp.ncbi.nlm.nih.gov/"
       - name: FTP_USER
         value: "anonymous"
       - name: FTP_PASSWORD
@@ -27,10 +27,8 @@ spec:
         image: ghcr.io/jvalue/crawler-general:latest
         imagePullPolicy: IfNotPresent
         env:
-          - name: TARGET_URL
-            value: "{{workflow.parameters.targetUrl}}"
           - name: FTP_URL
-            value: "{{workflow.parameters.FTP_URL}}"
+            value: "{{workflow.parameters.targetUrl}}"
           - name: FTP_USER
             value: "{{workflow.parameters.FTP_USER}}"
           - name: FTP_PASSWORD

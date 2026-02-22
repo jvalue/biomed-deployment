@@ -6,6 +6,8 @@ metadata:
   labels:
     template-version: "1.0.0"
 spec:
+  imagePullSecrets:
+    - name: ghcr-login-secret
   entrypoint: main
   templates:
     - name: main
