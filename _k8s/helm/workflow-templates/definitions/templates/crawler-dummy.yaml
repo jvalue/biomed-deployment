@@ -1,0 +1,14 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: crawler-dummy
+  namespace: argo-managed-crawler
+  labels:
+    template-version: "1.0.0"
+spec:
+  entrypoint: main
+  templates:
+    - name: main
+      container:
+        image: ghcr.io/jvalue/crawler-dummy:latest
+        imagePullPolicy: IfNotPresent

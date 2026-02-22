@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: crawler-general
+  namespace: argo-managed-crawler
+  labels:
+    template-version: "1.0.0"
+spec:
+  entrypoint: main
+  arguments:
+    parameters:
+      - name: targetUrl
+        value: ""
+      - name: FTP_URL
+        value: "https://ftp.ncbi.nlm.nih.gov/"
+      - name: FTP_USER
+        value: "anonymous"
+      - name: FTP_PASSWORD
+        value: "anonymous"
+      - name: FTP_STRUCTURE_FILE
+        value: "ftp_structure.txt"
+      - name: FTP_MAX_DEPTH
+        value: "1"
+  templates:
+    - name: main
+      container:
+        image: ghcr.io/jvalue/crawler-general:latest
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: TARGET_URL
+            value: "{{workflow.parameters.targetUrl}}"
+          - name: FTP_URL
+            value: "{{workflow.parameters.FTP_URL}}"
+          - name: FTP_USER
+            value: "{{workflow.parameters.FTP_USER}}"
+          - name: FTP_PASSWORD
+            value: "{{workflow.parameters.FTP_PASSWORD}}"
+          - name: FTP_STRUCTURE_FILE
+            value: "{{workflow.parameters.FTP_STRUCTURE_FILE}}"
+          - name: FTP_MAX_DEPTH
+            value: "{{workflow.parameters.FTP_MAX_DEPTH}}"
+          - name: DB_HOST
+            value: "crawler-db.argo-managed-crawler.svc.cluster.local"
+          - name: DB_PORT
+            value: "5436"
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: crawler-db-credentials
+                key: POSTGRES_DB
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: crawler-db-credentials
+                key: POSTGRES_USER
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: crawler-db-credentials
+                key: POSTGRES_PASSWORD
