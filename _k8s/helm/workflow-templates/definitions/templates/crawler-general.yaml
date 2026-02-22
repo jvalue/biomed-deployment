@@ -26,6 +26,7 @@ spec:
       container:
         image: ghcr.io/jvalue/crawler-general:latest
         imagePullPolicy: IfNotPresent
+        command: ["python", "-m", "src.main"]
         env:
           - name: FTP_URL
             value: "{{workflow.parameters.targetUrl}}"
