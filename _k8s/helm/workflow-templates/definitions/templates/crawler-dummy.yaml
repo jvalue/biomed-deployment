@@ -12,6 +12,6 @@ spec:
   templates:
     - name: main
       container:
-        image: ghcr.io/jvalue/crawler-dummy:latest
+        image: ghcr.io/jvalue/crawler-dummy:847c7364535635c709d691698cac60bddabf1f14
         imagePullPolicy: Always
         command: ["python", "-m", "src.main"]
