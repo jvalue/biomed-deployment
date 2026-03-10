@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: crawler-dummy-with-api-calls
+  namespace: argo-managed-crawler
+  labels:
+    template-version: "1.0.0"
+spec:
+  imagePullSecrets:
+    - name: ghcr-login-secret
+  entrypoint: main
+  templates:
+    - name: main
+      container:
+        image: ghcr.io/jvalue/crawler-dummy:b684676
+        imagePullPolicy: IfNotPresent
+        command: ["python", "-m", "src.main"]
+        env:
+          - name: MANAGEMENT_BACKEND_URL
+            valueFrom:
+              secretKeyRef:
+                name: crawler-management-auth
+                key: MANAGEMENT_BACKEND_URL
+          - name: MANAGEMENT_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: crawler-management-auth
+                key: MANAGEMENT_API_KEY
+          - name: CRAWLER_RUN_NAME
+            value: "{{workflow.name}}"
+          - name: CRAWLER_RUN_NAMESPACE
+            value: "{{workflow.namespace}}"
+          - name: CRAWLER_DUMMY_RUN_NAME
+            value: "{{workflow.name}}"
+          - name: CRAWLER_DUMMY_RUN_NAMESPACE
+            value: "{{workflow.namespace}}"
+          - name: CRAWLER_DUMMY_ENDPOINT
+            value: "/api/v1/crawler-runs/{{workflow.namespace}}/{{workflow.name}}/events"
+          - name: CRAWLER_DUMMY_METHOD
+            value: "POST"

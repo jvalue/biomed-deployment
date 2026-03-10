@@ -15,3 +15,12 @@ spec:
         image: ghcr.io/jvalue/crawler-dummy:847c7364535635c709d691698cac60bddabf1f14
         imagePullPolicy: IfNotPresent
         command: ["python", "-m", "src.main"]
+        env:
+          - name: CRAWLER_RUN_NAME
+            value: "{{workflow.name}}"
+          - name: CRAWLER_RUN_NAMESPACE
+            value: "{{workflow.namespace}}"
+          - name: CRAWLER_DUMMY_RUN_NAME
+            value: "{{workflow.name}}"
+          - name: CRAWLER_DUMMY_RUN_NAMESPACE
+            value: "{{workflow.namespace}}"
