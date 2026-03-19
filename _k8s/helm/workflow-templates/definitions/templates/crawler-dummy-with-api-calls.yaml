@@ -4,7 +4,7 @@ metadata:
   name: crawler-dummy-with-api-calls
   namespace: argo-managed-crawler
   labels:
-    template-version: "1.0.3"
+    template-version: "1.0.4"
 spec:
   imagePullSecrets:
     - name: ghcr-login-secret
