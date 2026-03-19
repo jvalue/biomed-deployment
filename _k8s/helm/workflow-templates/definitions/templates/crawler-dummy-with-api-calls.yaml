@@ -12,7 +12,7 @@ spec:
   templates:
     - name: main
       container:
-        image: ghcr.io/jvalue/crawler-dummy:9d439b3614d2876e57c005ab56c49589f2b9ca91
+        image: ghcr.io/jvalue/crawler-dummy:eb3f2a6ee24824bd9f83b767d0c29552d3c50324
         imagePullPolicy: IfNotPresent
         command: ["python", "-m", "src.main"]
         env:
