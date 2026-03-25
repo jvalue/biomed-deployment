@@ -4,7 +4,7 @@ metadata:
   name: crawler-dummy-with-api-calls
   namespace: argo-managed-crawler
   labels:
-    template-version: "1.0.5"
+    template-version: "1.0.6"
 spec:
   imagePullSecrets:
     - name: ghcr-login-secret
@@ -12,7 +12,7 @@ spec:
   templates:
     - name: main
       container:
-        image: ghcr.io/jvalue/crawler-dummy:83254c23531c3a46120046328890964e8ce2b6ab
+        image: ghcr.io/jvalue/crawler-dummy:bd6b819254ccc30382ca7f6a7740faa18599ae73
         imagePullPolicy: IfNotPresent
         command: ["python", "-m", "src.main"]
         env:
