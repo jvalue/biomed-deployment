@@ -24,3 +24,7 @@ spec:
             value: "{{workflow.name}}"
           - name: CRAWLER_DUMMY_RUN_NAMESPACE
             value: "{{workflow.namespace}}"
+          - name: CRAWLER_SCHEDULE_NAME
+            value: "{{workflow.labels['workflows.argoproj.io/cron-workflow']}}"
+          - name: CRAWLER_SCHEDULE_NAMESPACE
+            value: "{{workflow.namespace}}"

@@ -4,7 +4,7 @@ metadata:
   name: crawler-dummy-with-api-calls
   namespace: argo-managed-crawler
   labels:
-    template-version: "1.0.8"
+    template-version: "1.0.9"
 spec:
   imagePullSecrets:
     - name: ghcr-login-secret
@@ -12,7 +12,7 @@ spec:
   templates:
     - name: main
       container:
-        image: ghcr.io/jvalue/crawler-dummy:67fbc933f5d4a23c6d110c8182255d3e7ec0b058
+        image: ghcr.io/jvalue/crawler-dummy:c1abe789fef0d5ef3b31958effa806e5b209319e
         imagePullPolicy: IfNotPresent
         command: ["python", "-m", "src.main"]
         env:
@@ -33,6 +33,10 @@ spec:
           - name: CRAWLER_DUMMY_RUN_NAME
             value: "{{workflow.name}}"
           - name: CRAWLER_DUMMY_RUN_NAMESPACE
+            value: "{{workflow.namespace}}"
+          - name: CRAWLER_SCHEDULE_NAME
+            value: "{{workflow.labels['workflows.argoproj.io/cron-workflow']}}"
+          - name: CRAWLER_SCHEDULE_NAMESPACE
             value: "{{workflow.namespace}}"
           - name: CRAWLER_DUMMY_ENDPOINT
             value: "/api/v1/crawler-runs/{{workflow.namespace}}/{{workflow.name}}/events"
