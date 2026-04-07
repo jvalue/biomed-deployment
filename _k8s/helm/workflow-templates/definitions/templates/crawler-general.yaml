@@ -4,7 +4,7 @@ metadata:
   name: crawler-general
   namespace: argo-managed-crawler
   labels:
-    template-version: "1.0.2"
+    template-version: "1.0.3"
 spec:
   imagePullSecrets:
     - name: ghcr-login-secret
@@ -28,6 +28,10 @@ spec:
         imagePullPolicy: IfNotPresent
         command: ["python", "-m", "src.main"]
         env:
+          - name: CRAWLER_RUN_NAME
+            value: "{{workflow.name}}"
+          - name: CRAWLER_RUN_NAMESPACE
+            value: "{{workflow.namespace}}"
           - name: FTP_URL
             value: "{{workflow.parameters.targetUrl}}"
           - name: FTP_USER
