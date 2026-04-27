@@ -1,0 +1,23 @@
+rabbitmq:
+  replicaCount: 1
+
+  auth:
+    username: guest
+    password: CHANGE_ME_RABBITMQ_PASSWORD
+    erlangCookie: sample-erlang-cookie
+
+  persistence:
+    enabled: true
+    storageClass: longhorn-no-replica-no-backup
+    size: 1Gi
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "200m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+service:
+  type: ClusterIP

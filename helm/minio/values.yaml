@@ -1,0 +1,19 @@
+minio:
+  mode: standalone
+
+  rootUser: minioadmin
+  rootPassword: CHANGE_ME_MINIO_PASSWORD
+
+  persistence:
+    enabled: true
+    storageClass: "longhorn-no-replica-no-backup"
+    size: 10Gi
+    accessMode: ReadWriteOnce
+
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
