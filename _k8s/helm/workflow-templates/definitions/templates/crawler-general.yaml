@@ -4,7 +4,7 @@ metadata:
   name: crawler-general
   namespace: argo-managed-crawler
   labels:
-    template-version: "1.0.3"
+    template-version: "1.0.4"
 spec:
   imagePullSecrets:
     - name: ghcr-login-secret
@@ -24,7 +24,7 @@ spec:
   templates:
     - name: main
       container:
-        image: ghcr.io/jvalue/crawler-general:847c7364535635c709d691698cac60bddabf1f14
+        image: ghcr.io/jvalue/crawler-general:5580cf002c2b00d0be6f2af27629d1e7c2d50d5
         imagePullPolicy: IfNotPresent
         command: ["python", "-m", "src.main"]
         env:
@@ -61,3 +61,7 @@ spec:
               secretKeyRef:
                 name: crawler-db-credentials
                 key: POSTGRES_PASSWORD
+          - name: RABBITMQ_URL
+            value: "amqp://guest:CHANGE_ME@rabbitmq.argo-managed-crawler.svc.cluster.local:5672/"
+          - name: RABBITMQ_QUEUE
+            value: "download-urls"
