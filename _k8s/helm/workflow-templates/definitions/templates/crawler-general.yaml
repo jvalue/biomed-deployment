@@ -24,7 +24,7 @@ spec:
   templates:
     - name: main
       container:
-        image: ghcr.io/jvalue/crawler-general:5580cf002c2b00d0be6f2af27629d1e7c2d50d5
+        image: ghcr.io/jvalue/crawler-general:a5580cf002c2b00d0be6f2af27629d1e7c2d50d5
         imagePullPolicy: IfNotPresent
         command: ["python", "-m", "src.main"]
         env:
