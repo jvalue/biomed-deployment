@@ -4,17 +4,29 @@ metadata:
   name: downloader-general
   namespace: argo-managed-crawler
   labels:
-    template-version: "1.0.0"
+    template-version: "1.0.6"
 spec:
   imagePullSecrets:
     - name: ghcr-login-secret
   entrypoint: main
   arguments:
-    parameters: []
+    parameters:
+      - name: DOWNLOAD_DEBUG_LARGE_FILE_MODE
+        value: "false"
+      - name: DOWNLOAD_DEBUG_LARGE_FILE_THRESHOLD_MB
+        value: "100"
+      - name: DOWNLOAD_DEBUG_MAX_FILES_PER_FOLDER
+        value: "0"
+      - name: DB_HOST
+        value: "crawler-db.argo-managed-crawler.svc.cluster.local"
+      - name: DB_PORT
+        value: "5436"
+      - name: LOG_LEVEL
+        value: "INFO"
   templates:
     - name: main
       container:
-        image: ghcr.io/jvalue/downloader-general:0e3a16b88bba47b67ddc9b343bfebd5b553086dc
+        image: ghcr.io/jvalue/downloader-general:178dc2244ba18923a58a44b43669b581a502e78d
         imagePullPolicy: IfNotPresent
         command: ["python", "-m", "src.main"]
         env:
@@ -22,6 +34,8 @@ spec:
             value: "{{workflow.name}}"
           - name: DOWNLOADER_RUN_NAMESPACE
             value: "{{workflow.namespace}}"
+          - name: LOG_LEVEL
+            value: "{{workflow.parameters.LOG_LEVEL}}"
           # RabbitMQ consumer configuration
           - name: RABBITMQ_URL
             value: "amqp://guest:CHANGE_ME@rabbitmq.argo-managed-crawler.svc.cluster.local:5672/"
@@ -46,9 +60,31 @@ spec:
           - name: DOWNLOAD_TIMEOUT_SECONDS
             value: "30"
           - name: DOWNLOAD_DEBUG_LARGE_FILE_MODE
-            value: "false"
+            value: "{{workflow.parameters.DOWNLOAD_DEBUG_LARGE_FILE_MODE}}"
           - name: DOWNLOAD_DEBUG_LARGE_FILE_THRESHOLD_MB
-            value: "100"
+            value: "{{workflow.parameters.DOWNLOAD_DEBUG_LARGE_FILE_THRESHOLD_MB}}"
+          - name: DOWNLOAD_DEBUG_MAX_FILES_PER_FOLDER
+            value: "{{workflow.parameters.DOWNLOAD_DEBUG_MAX_FILES_PER_FOLDER}}"
+          # Database configuration for marking downloaded entries
+          - name: DB_HOST
+            value: "crawler-db.argo-managed-crawler.svc.cluster.local"
+          - name: DB_PORT
+            value: "5436"
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: crawler-db-credentials
+                key: POSTGRES_DB
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: crawler-db-credentials
+                key: POSTGRES_USER
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: crawler-db-credentials
+                key: POSTGRES_PASSWORD
         resources:
           requests:
             cpu: "200m"

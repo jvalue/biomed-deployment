@@ -4,7 +4,7 @@ metadata:
   name: crawler-general
   namespace: argo-managed-crawler
   labels:
-    template-version: "1.0.4"
+    template-version: "1.0.9"
 spec:
   imagePullSecrets:
     - name: ghcr-login-secret
@@ -21,10 +21,14 @@ spec:
         value: "ftp_structure.txt"
       - name: FTP_MAX_DEPTH
         value: "1"
+      - name: DB_NAME
+        value: ""
+      - name: CRAWL_DB_NAME
+        value: ""
   templates:
     - name: main
       container:
-        image: ghcr.io/jvalue/crawler-general:a5580cf002c2b00d0be6f2af27629d1e7c2d50d5
+        image: ghcr.io/jvalue/crawler-general:178dc2244ba18923a58a44b43669b581a502e78d
         imagePullPolicy: IfNotPresent
         command: ["python", "-m", "src.main"]
         env:
@@ -51,6 +55,8 @@ spec:
               secretKeyRef:
                 name: crawler-db-credentials
                 key: POSTGRES_DB
+          - name: CRAWL_DB_NAME
+            value: "{{workflow.parameters.CRAWL_DB_NAME}}"
           - name: DB_USER
             valueFrom:
               secretKeyRef:

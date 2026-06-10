@@ -1,6 +1,11 @@
 rabbitmq:
   replicaCount: 1
 
+  image:
+    repository: rabbitmq
+    tag: "3.12-management"
+    pullPolicy: IfNotPresent
+
   auth:
     username: guest
     password: CHANGE_ME_RABBITMQ_PASSWORD
@@ -18,6 +23,11 @@ rabbitmq:
     limits:
       memory: "1Gi"
       cpu: "500m"
+
+  livenessProbe:
+    enabled: false
+  readinessProbe:
+    enabled: false
 
 service:
   type: ClusterIP
