@@ -4,7 +4,7 @@ metadata:
   name: downloader-general
   namespace: argo-managed-crawler
   labels:
-    template-version: "1.0.6"
+    template-version: "1.0.14"
 spec:
   imagePullSecrets:
     - name: ghcr-login-secret
@@ -23,10 +23,18 @@ spec:
         value: "5436"
       - name: LOG_LEVEL
         value: "INFO"
+      - name: S3_BUCKET
+        value: "biomed-data"
+      - name: S3_UPLOAD_PREFIX
+        value: "downloader-files"
+      - name: S3_DEBUG_PREFIX
+        value: "downloader-debug"
+      - name: CRAWL_DB_NAME
+        value: ""
   templates:
     - name: main
       container:
-        image: ghcr.io/jvalue/downloader-general:178dc2244ba18923a58a44b43669b581a502e78d
+        image: ghcr.io/jvalue/downloader-general:e3ea1a51f688d3482de02a5928f5469fa676c722
         imagePullPolicy: IfNotPresent
         command: ["python", "-m", "src.main"]
         env:
@@ -45,15 +53,28 @@ spec:
           - name: S3_ENDPOINT_URL
             value: "http://minio.biomed.svc.cluster.local:9000"
           - name: S3_BUCKET
-            value: "biomed-data"
+            value: "{{workflow.parameters.S3_BUCKET}}"
+          - name: AWS_DEFAULT_REGION
+            value: "eu-central-1"
           - name: S3_UPLOAD_PREFIX
-            value: "downloader-files"
+            value: "{{workflow.parameters.S3_UPLOAD_PREFIX}}"
           - name: S3_DEBUG_PREFIX
-            value: "downloader-debug"
+            value: "{{workflow.parameters.S3_DEBUG_PREFIX}}"
+          - name: CRAWL_DB_NAME
+            value: "{{workflow.parameters.CRAWL_DB_NAME}}"
+          # MinIO credentials must be available in this workflow namespace.
+          # The source secret is named `minio` in the `biomed` namespace and
+          # should be mirrored into `argo-managed-crawler` for workflow pods.
           - name: AWS_ACCESS_KEY_ID
-            value: "minioadmin"
+            valueFrom:
+              secretKeyRef:
+                name: minio
+                key: rootUser
           - name: AWS_SECRET_ACCESS_KEY
-            value: "minioadmin"
+            valueFrom:
+              secretKeyRef:
+                name: minio
+                key: rootPassword
           # Download configuration
           - name: DOWNLOAD_DESTINATION_DIR
             value: "/tmp/downloader-general"

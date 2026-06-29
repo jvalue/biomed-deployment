@@ -4,7 +4,7 @@ metadata:
   name: crawler-general
   namespace: argo-managed-crawler
   labels:
-    template-version: "1.0.9"
+    template-version: "1.0.13"
 spec:
   imagePullSecrets:
     - name: ghcr-login-secret
@@ -21,14 +21,12 @@ spec:
         value: "ftp_structure.txt"
       - name: FTP_MAX_DEPTH
         value: "1"
-      - name: DB_NAME
-        value: ""
       - name: CRAWL_DB_NAME
         value: ""
   templates:
     - name: main
       container:
-        image: ghcr.io/jvalue/crawler-general:178dc2244ba18923a58a44b43669b581a502e78d
+        image: ghcr.io/jvalue/crawler-general:11737a7d5fb40c1db989c8c9f00119a893dfb27d
         imagePullPolicy: IfNotPresent
         command: ["python", "-m", "src.main"]
         env:
