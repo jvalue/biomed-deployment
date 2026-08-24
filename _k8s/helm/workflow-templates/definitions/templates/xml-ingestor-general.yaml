@@ -1,0 +1,76 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: xml-ingestor-general
+  namespace: argo-managed-crawler
+  labels:
+    template-version: "1.0.0"
+spec:
+  imagePullSecrets:
+    - name: ghcr-login-secret
+  entrypoint: main
+  arguments:
+    parameters:
+      - name: XSD_PATH
+        value: ""
+      - name: XML_PATH
+        value: ""
+      - name: DB_HOST
+        value: "crawler-db.argo-managed-crawler.svc.cluster.local"
+      - name: DB_PORT
+        value: "5436"
+      - name: COMMIT_EVERY
+        value: "1000"
+      - name: TABLE_PREFIX
+        value: ""
+      - name: ECHO_SQL
+        value: "false"
+  templates:
+    - name: main
+      container:
+        image: ghcr.io/jvalue/xml-ingestor:latest
+        imagePullPolicy: IfNotPresent
+        command: ["python", "xml_ingestor/main.py"]
+        env:
+          - name: XML_INGESTOR_RUN_NAME
+            value: "{{workflow.name}}"
+          - name: XML_INGESTOR_RUN_NAMESPACE
+            value: "{{workflow.namespace}}"
+          - name: XML_INGESTOR_XSD
+            value: "{{workflow.parameters.XSD_PATH}}"
+          - name: XML_INGESTOR_XML
+            value: "{{workflow.parameters.XML_PATH}}"
+          - name: XML_INGESTOR_COMMIT_EVERY
+            value: "{{workflow.parameters.COMMIT_EVERY}}"
+          - name: XML_INGESTOR_TABLE_PREFIX
+            value: "{{workflow.parameters.TABLE_PREFIX}}"
+          - name: XML_INGESTOR_ECHO_SQL
+            value: "{{workflow.parameters.ECHO_SQL}}"
+          - name: DB_HOST
+            value: "{{workflow.parameters.DB_HOST}}"
+          - name: DB_PORT
+            value: "{{workflow.parameters.DB_PORT}}"
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: crawler-db-credentials
+                key: POSTGRES_DB
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: crawler-db-credentials
+                key: POSTGRES_USER
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: crawler-db-credentials
+                key: POSTGRES_PASSWORD
+          - name: XML_INGESTOR_DATABASE_URL
+            value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "1Gi"
