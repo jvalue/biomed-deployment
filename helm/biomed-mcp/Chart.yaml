@@ -1,0 +1,6 @@
+apiVersion: v2
+name: biomed-mcp
+description: Helm Chart for the Biomed Unified MCP Server (SSE transport)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

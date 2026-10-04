@@ -1,0 +1,81 @@
+# Default values for graphql-api.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/jvalue/graphql-api
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets:
+  - name: ghcr-login-secret
+
+nameOverride: ""
+fullnameOverride: "graphql-api"
+
+serviceAccount:
+  create: false
+  name: ""
+
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8003
+  targetPort: 8003
+
+ingress:
+  enabled: false
+  className: "private-ingress"
+  annotations: {}
+  hosts:
+    - host: ""
+      paths:
+        - path: /graphql
+          pathType: Prefix
+
+# Database connection configuration (xml-db in argo-managed-crawler)
+database:
+  existingSecret: "xml-db-credentials"
+  host: "xml-db.argo-managed-crawler.svc.cluster.local"
+  port: 5432
+  url: ""
+
+# S3 / MinIO configuration
+s3:
+  endpointUrl: "http://minio.biomed.svc.cluster.local:9000"
+  region: "eu-central-1"
+  bucket: "biomed-data"
+  existingSecret: "minio"
+  accessKeySecretKey: "rootUser"
+  secretKeySecretKey: "rootPassword"
+
+# Application environment configuration
+env:
+  POSTGRES_SCHEMA: "public"
+  POSTGRES_MAX_ROWS: "500"
+  POSTGRES_READ_ONLY: "true"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8003
+  initialDelaySeconds: 10
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8003
+  initialDelaySeconds: 5
+  periodSeconds: 10
