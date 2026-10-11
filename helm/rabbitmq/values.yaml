@@ -8,8 +8,8 @@ rabbitmq:
 
   auth:
     username: guest
-    password: CHANGE_ME_RABBITMQ_PASSWORD
-    erlangCookie: sample-erlang-cookie
+    existingPasswordSecret: rabbitmq
+    existingErlangSecret: rabbitmq
 
   persistence:
     enabled: true

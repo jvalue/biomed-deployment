@@ -14,7 +14,18 @@ cd helm/minio
 helm dependency update
 ```
 
-2. Install the chart:
+2. Create the MinIO credentials secret:
+```bash
+# Generate a secure password or use a known password
+export MINIO_PASSWORD=$(openssl rand -base64 32)
+
+kubectl create secret generic minio \
+  --namespace biomed \
+  --from-literal=rootUser=minioadmin \
+  --from-literal=rootPassword="$MINIO_PASSWORD"
+```
+
+3. Install the chart:
 ```bash
 helm upgrade --install minio . -n biomed --create-namespace
 ```

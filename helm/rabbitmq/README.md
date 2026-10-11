@@ -12,7 +12,19 @@ cd helm/rabbitmq
 helm dependency update
 ```
 
-2. Install the chart:
+2. Create the RabbitMQ credentials secret:
+```bash
+# Generate a secure password and Erlang cookie
+export RABBITMQ_PASSWORD=$(openssl rand -base64 32)
+export ERLANG_COOKIE=$(openssl rand -hex 16)
+
+kubectl create secret generic rabbitmq \
+  --namespace biomed \
+  --from-literal=rabbitmq-password="$RABBITMQ_PASSWORD" \
+  --from-literal=rabbitmq-erlang-cookie="$ERLANG_COOKIE"
+```
+
+3. Install the chart:
 ```bash
 helm upgrade --install rabbitmq . -n biomed --create-namespace
 ```

@@ -1,8 +1,7 @@
 minio:
   mode: standalone
 
-  rootUser: minioadmin
-  rootPassword: CHANGE_ME_MINIO_PASSWORD
+  existingSecret: minio
 
   persistence:
     enabled: true
