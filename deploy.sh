@@ -43,7 +43,7 @@ if helm upgrade "$RELEASE" "$CHART_DIR" -n "$NAMESPACE"; then
     echo -e "${GREEN}✅ Deployment successful!${NC}"
     echo ""
     echo -e "${YELLOW}Updated templates:${NC}"
-    kubectl get workflowtemplate crawler-general downloader-general xml-ingestor-general -n "$NAMESPACE" \
+    kubectl get workflowtemplate crawler-general xml-ingestor-general -n "$NAMESPACE" \
         -o custom-columns=NAME:.metadata.name,VERSION:.metadata.labels."template-version",IMAGE:.spec.templates[0].container.image
 else
     echo ""
