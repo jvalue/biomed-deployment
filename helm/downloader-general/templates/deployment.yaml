@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "downloader-general.fullname" . }}
+  labels:
+    {{- include "downloader-general.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "downloader-general.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "downloader-general.labels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["python", "-m", "src.main"]
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | quote }}
+            # RabbitMQ consumer configuration
+            - name: RABBITMQ_URL
+              value: {{ .Values.rabbitmq.url | quote }}
+            - name: RABBITMQ_QUEUE
+              value: {{ .Values.rabbitmq.queue | quote }}
+            # MinIO / S3 configuration
+            - name: S3_ENDPOINT_URL
+              value: {{ .Values.s3.endpointUrl | quote }}
+            - name: S3_BUCKET
+              value: {{ .Values.s3.bucket | quote }}
+            - name: AWS_DEFAULT_REGION
+              value: {{ .Values.s3.region | quote }}
+            - name: S3_UPLOAD_PREFIX
+              value: {{ .Values.s3.uploadPrefix | quote }}
+            - name: S3_DEBUG_PREFIX
+              value: {{ .Values.s3.debugPrefix | quote }}
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.s3.existingSecret }}
+                  key: {{ .Values.s3.accessKeySecretKey | default "rootUser" }}
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.s3.existingSecret }}
+                  key: {{ .Values.s3.secretKeySecretKey | default "rootPassword" }}
+            # Download configuration
+            - name: DOWNLOAD_DESTINATION_DIR
+              value: {{ .Values.download.destinationDir | quote }}
+            - name: DOWNLOAD_TIMEOUT_SECONDS
+              value: {{ .Values.download.timeoutSeconds | quote }}
+            - name: DOWNLOAD_CHUNK_SIZE_BYTES
+              value: {{ .Values.download.chunkSizeBytes | quote }}
+            - name: DOWNLOAD_DEBUG_LARGE_FILE_MODE
+              value: {{ .Values.download.debugLargeFileMode | quote }}
+            - name: DOWNLOAD_DEBUG_LARGE_FILE_THRESHOLD_MB
+              value: {{ .Values.download.debugLargeFileThresholdMb | quote }}
+            - name: DOWNLOAD_DEBUG_MAX_FILES_PER_FOLDER
+              value: {{ .Values.download.debugMaxFilesPerFolder | quote }}
+            # Database configuration for marking downloaded entries
+            - name: DB_HOST
+              value: {{ .Values.database.host | quote }}
+            - name: DB_PORT
+              value: {{ .Values.database.port | quote }}
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.existingSecret }}
+                  key: POSTGRES_DB
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.existingSecret }}
+                  key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.existingSecret }}
+                  key: POSTGRES_PASSWORD
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

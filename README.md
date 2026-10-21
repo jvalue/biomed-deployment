@@ -32,5 +32,5 @@ kubectl -n argo create token argo-user
 
 Now open the Argo UI in your browser and paste the token into the login dialog:
 ```
-http://<ARGO_SERVER_HOST>/argo
+http://<argo-server-host>/argo
 ```

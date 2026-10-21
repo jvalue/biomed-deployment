@@ -1,0 +1,37 @@
+# Default values for xml-db.
+
+nameOverride: ""
+fullnameOverride: "xml-db"
+
+database:
+  name: "xml"
+  user: "postgres"
+  password: "CHANGE_ME_DATABASE_PASSWORD"
+
+secret:
+  name: "xml-db-credentials"
+
+image:
+  repository: postgres
+  tag: "16-alpine"
+  pullPolicy: IfNotPresent
+
+service:
+  name: "xml-db"
+  type: ClusterIP
+  port: 5432
+  targetPort: 5432
+
+persistence:
+  enabled: true
+  size: 400Gi
+  storageClass: ""
+  accessMode: ReadWriteOnce
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 4Gi

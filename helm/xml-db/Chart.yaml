@@ -1,0 +1,6 @@
+apiVersion: v2
+name: xml-db
+description: Helm chart for XML / Crawler PostgreSQL Database
+type: application
+version: 0.1.0
+appVersion: "16-alpine"

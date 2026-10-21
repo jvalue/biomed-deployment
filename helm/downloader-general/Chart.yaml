@@ -1,0 +1,6 @@
+apiVersion: v2
+name: downloader-general
+description: Helm Chart for Downloader General Worker Service
+type: application
+version: 0.1.0
+appVersion: "25f73adeeba79009c53c8b72abdedeaea3720806"

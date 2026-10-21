@@ -4,8 +4,8 @@ replicaCount: 1
 
 image:
   repository: ghcr.io/jvalue/graphql-api
-  pullPolicy: IfNotPresent
-  tag: "latest"
+  pullPolicy: Always
+  tag: "5bf135d3e44f2f5c09ada607909c583668befa03"
 
 imagePullSecrets:
   - name: ghcr-login-secret

@@ -1,0 +1,59 @@
+# Default values for downloader-general worker service.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/jvalue/downloader-general
+  pullPolicy: IfNotPresent
+  tag: "25f73adeeba79009c53c8b72abdedeaea3720806"
+
+imagePullSecrets:
+  - name: ghcr-login-secret
+
+nameOverride: ""
+fullnameOverride: "downloader-general"
+
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+
+# RabbitMQ configuration
+rabbitmq:
+  url: "amqp://guest:CHANGE_ME@rabbitmq.argo-managed-crawler.svc.cluster.local:5672/"
+  queue: "download-urls"
+
+# S3 / MinIO configuration
+s3:
+  endpointUrl: "http://minio.biomed.svc.cluster.local:9000"
+  bucket: "biomed-data"
+  region: "eu-central-1"
+  uploadPrefix: "downloader-files"
+  debugPrefix: "downloader-debug"
+  existingSecret: "minio"
+  accessKeySecretKey: "rootUser"
+  secretKeySecretKey: "rootPassword"
+
+# Database configuration (for marking downloaded entries in crawler-db)
+database:
+  host: "crawler-db.argo-managed-crawler.svc.cluster.local"
+  port: "5436"
+  existingSecret: "crawler-db-credentials"
+
+# Download configuration
+download:
+  destinationDir: "/tmp/downloader-general"
+  timeoutSeconds: "30"
+  chunkSizeBytes: "8388608"
+  debugLargeFileMode: "false"
+  debugLargeFileThresholdMb: "100"
+  debugMaxFilesPerFolder: "0"
+
+logLevel: "INFO"
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi

@@ -3,4 +3,4 @@ name: graphql-api
 description: Helm Chart for the Biomed Strawberry GraphQL API
 type: application
 version: 0.1.0
-appVersion: "0.1.0"
+appVersion: "b53d44991e48c602305fc5ee12f251c20bcb0593"
